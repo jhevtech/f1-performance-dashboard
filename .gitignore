@@ -1,0 +1,18 @@
+# FastF1 HTTP/pickle cache: large, re-downloadable
+cache/
+
+# Python environments
+venv/
+.venv/
+env/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Editor / OS
+.vscode/
+.DS_Store
+
+# Scratch exploration
+explore.py

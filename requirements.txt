@@ -1,0 +1,6 @@
+fastf1==3.8.3
+pandas==2.3.3
+numpy==2.5.3
+requests==2.34.2
+streamlit==1.64.0
+altair==6.3.0
