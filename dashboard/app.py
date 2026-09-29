@@ -17,11 +17,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from analysis import common, gap_tracking, sector_loss, tire_degradation, upgrade_attribution  # noqa: E402
 from etl.db import read_sql  # noqa: E402
 
-# Fixed colors from a colorblind-validated palette. Compounds loosely follow Pirelli's
-# red / yellow convention; hard is blue because white is invisible on a light background.
+# UI colors come from the personal theme in .streamlit/config.toml; charts reuse it here.
+THEME_PRIMARY = "#1D2A24"
+THEME_ACCENT = "#5F7D6A"
+LINE_COLOR = THEME_ACCENT      # single-series lines
+REFERENCE_RULE = {"color": THEME_PRIMARY, "opacity": 0.35, "strokeDash": [4, 4]}  # zero line, upgrade markers
+
+# Compounds keep Pirelli's red / yellow convention (hard is blue: white vanishes on a light
+# background). The theme is one green hue, so it can't separate three categories on its own.
 COMPOUND_COLORS = alt.Scale(domain=["SOFT", "MEDIUM", "HARD"], range=["#e34948", "#eda100", "#2a78d6"])
-SECTOR_COLORS = alt.Scale(domain=["S1", "S2", "S3"], range=["#2a78d6", "#eb6834", "#1baf7a"])
-LINE_COLOR = "#2a78d6"
+# Sectors run in order around the lap, so a light->dark ramp of the theme greens fits.
+# #9BB29C replaces accent-soft #B7C9B5, which is too faint on white (1.7:1) for a data mark.
+SECTOR_COLORS = alt.Scale(domain=["S1", "S2", "S3"], range=["#9BB29C", THEME_ACCENT, THEME_PRIMARY])
 
 st.set_page_config(page_title="F1 Performance Intelligence", layout="wide")
 
@@ -166,7 +173,7 @@ with tab_gap:
                     "(one car has pitted, the other has not yet).")
         st.altair_chart(
             alt.layer(
-                alt.Chart(pd.DataFrame({"y": [0]})).mark_rule(color="#888", strokeDash=[4, 4]).encode(y="y:Q"),
+                alt.Chart(pd.DataFrame({"y": [0]})).mark_rule(**REFERENCE_RULE).encode(y="y:Q"),
                 alt.Chart(gaps).mark_line(color=LINE_COLOR, strokeWidth=2, point=alt.OverlayMarkDef(size=20)).encode(
                     x=alt.X("lap_number:Q", title="Lap"),
                     y=alt.Y("gap_s:Q", title=f"Gap {driver_a} → {driver_b} (s)"),
@@ -194,7 +201,7 @@ with tab_upgrade:
     upgrade = get_upgrade_table()
     rules = alt.Chart(pd.DataFrame({"round": [upgrade_attribution.UPGRADE_ROUND - 0.5,
                                               upgrade_attribution.TEAMMATE_UPGRADE_ROUND - 0.5]})
-                      ).mark_rule(color="#888", strokeDash=[4, 4]).encode(x="round:Q")
+                      ).mark_rule(**REFERENCE_RULE).encode(x="round:Q")
 
     def metric_chart(column, title):
         return alt.layer(

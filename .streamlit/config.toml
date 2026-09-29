@@ -1,0 +1,19 @@
+# Personal color theme:
+#   background #F5F7F4 · surface #FFFFFF · primary #1D2A24 · accent #5F7D6A
+#   accent-soft #B7C9B5 · text #171A18 · border #E2E6E2
+[theme]
+base = "light"
+primaryColor = "#5F7D6A"             # accent: selected tab, buttons, sliders, checkboxes
+backgroundColor = "#F5F7F4"          # background
+secondaryBackgroundColor = "#FFFFFF" # surface: inputs, expanders, code blocks
+textColor = "#171A18"                # text
+linkColor = "#5F7D6A"
+borderColor = "#E2E6E2"              # border
+dataframeBorderColor = "#E2E6E2"
+dataframeHeaderBackgroundColor = "#F5F7F4"
+showWidgetBorder = true              # inputs are white on white in the sidebar, so outline them
+showSidebarBorder = true
+
+[theme.sidebar]
+backgroundColor = "#FFFFFF"          # surface
+secondaryBackgroundColor = "#F5F7F4"
