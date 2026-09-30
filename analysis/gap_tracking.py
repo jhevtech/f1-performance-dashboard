@@ -58,6 +58,8 @@ def _openf1_gap_at_lap_ends(laps, session_id, driver):
         + pd.to_timedelta(driver_laps["lap_time_s"] + LINE_CROSSING_LATENCY_S, unit="s"),
     }).dropna().sort_values("date")
     samples = _openf1_gaps(session_id, driver_laps["driver_number"].iloc[0])
+    if samples.empty or lap_ends.empty:   # OpenF1 not stored, or laps lack UTC timestamps
+        return pd.Series(dtype=float, name="gap_to_leader")
     # merge_asof: take the most recent sample at or before each lap end. OpenF1 only emits a
     # sample when a value changes (the leader's gap stays 0 for minutes), so carrying the
     # last value forward is correct; the 120 s cap stops a stale value surviving a data gap.

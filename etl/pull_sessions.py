@@ -43,13 +43,14 @@ def make_session_id(year, round_number, session_type):
     return f"{year}_{round_number:02d}_{session_type}"
 
 
-def load_session(year, event, session_type="R"):
+def load_session(year, event, session_type="R", load_telemetry=True):
     """Download (or read from cache) one session via FastF1."""
     fastf1.Cache.enable_cache(str(PROJECT_ROOT / "cache"))
     session = fastf1.get_session(year, event, session_type)
     # Telemetry is slow to download and we don't store it, but FastF1 needs it to anchor
     # the session clock to real UTC time (LapStartDate), which we use to join with OpenF1.
-    session.load(laps=True, telemetry=True, weather=True, messages=True)
+    # Without it, lap_start_date is stored as NULL and every other column is unaffected.
+    session.load(laps=True, telemetry=load_telemetry, weather=True, messages=True)
     return session
 
 
@@ -120,9 +121,9 @@ def upsert_laps(conn, laps_df):
     )
 
 
-def pull_session(year, event, session_type="R"):
+def pull_session(year, event, session_type="R", load_telemetry=True):
     """Full ETL for one session: extract with FastF1, transform, load into SQLite."""
-    session = load_session(year, event, session_type)
+    session = load_session(year, event, session_type, load_telemetry)
     session_id = make_session_id(year, int(session.event["RoundNumber"]), session_type)
     laps_df = transform_laps(session, session_id)
 

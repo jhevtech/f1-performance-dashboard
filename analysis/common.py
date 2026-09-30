@@ -18,10 +18,13 @@ def clean_laps(laps):
     - track_status == '1': green flag for the whole lap. IsAccurate already drops safety-car
       laps, but it keeps yellow-flag laps (328 of 10,594 accurate laps in our 10 races),
       where drivers must slow down in the flagged zone.
+
+    2010-2017 races (timing_source 'jolpica') have no flag data, so track_status is NULL and
+    is_accurate carries the whole definition (see etl/pull_history.py).
     """
     mask = (
         (laps["is_accurate"] == 1)
-        & (laps["track_status"] == "1")
+        & ((laps["track_status"] == "1") | laps["track_status"].isna())
         & laps["lap_time_s"].notna()
     )
     return laps[mask].copy()

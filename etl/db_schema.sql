@@ -11,7 +11,10 @@ CREATE TABLE IF NOT EXISTS sessions (
     session_type  TEXT NOT NULL,        -- 'R' (race), 'Q', ...
     session_date  TEXT,                 -- ISO date
     had_rainfall  INTEGER,              -- 1 if the weather feed recorded rain at any point
-    loaded_at     TEXT NOT NULL         -- when the ETL last wrote this session
+    loaded_at     TEXT NOT NULL,        -- when the ETL last wrote this session
+    -- 'fastf1' (2018+: sectors, compounds, flags) or 'jolpica' (2010-2017: lap times,
+    -- positions and pit stops only). Tells each analysis which columns it can rely on.
+    timing_source TEXT NOT NULL DEFAULT 'fastf1'
 );
 
 -- One row per driver per lap. All laps are kept; data quality is expressed as flags
@@ -64,4 +67,21 @@ CREATE TABLE IF NOT EXISTS openf1_intervals (
     gap_to_leader  REAL,                -- seconds; NULL when the car is a lap or more down
     interval_s     REAL,                -- seconds to the car directly ahead
     PRIMARY KEY (session_id, driver_number, date)
+);
+
+-- Car upgrades each team declared to the FIA before a Grand Prix ("Car Presentation
+-- Submissions"). The FIA publishes these from 2024; earlier seasons have no rows.
+CREATE TABLE IF NOT EXISTS upgrades (
+    year              INTEGER NOT NULL,
+    round             INTEGER NOT NULL,   -- joins to sessions.round
+    event_name        TEXT NOT NULL,
+    team              TEXT NOT NULL,      -- normalised, e.g. 'Red Bull Racing' (see etl/teams.py)
+    team_as_filed     TEXT,               -- the entry name printed in the document
+    item              INTEGER NOT NULL,   -- the team's row number in the document
+    component         TEXT,               -- 'Floor Body', 'Front Wing', ...
+    reason            TEXT,               -- 'Performance - Local Load', 'Circuit specific - Cooling Range', ...
+    geometric_change  TEXT,               -- what changed vs the previous version
+    description       TEXT,               -- how the team says the update works
+    source_url        TEXT,
+    PRIMARY KEY (year, round, team, item)
 );

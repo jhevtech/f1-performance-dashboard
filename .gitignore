@@ -16,3 +16,7 @@ __pycache__/
 
 # Scratch exploration
 explore.py
+
+# Local AI-assistant skill links (point into venv/)
+.claude/
+.agents/

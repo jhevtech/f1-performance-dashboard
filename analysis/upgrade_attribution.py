@@ -32,6 +32,7 @@ import pandas as pd
 from analysis.common import clean_laps, load_laps, load_sessions
 from analysis.tire_degradation import DRY_COMPOUNDS
 
+YEAR = 2023
 TEAM = "McLaren"
 UPGRADED_DRIVER, TEAMMATE = "NOR", "PIA"
 UPGRADE_ROUND = 9        # Austria 2023: Norris's car only
@@ -78,7 +79,10 @@ def pace_for_race(laps):
 def pace_by_race(sessions=None):
     """Run pace_for_race over every race session in the database."""
     sessions = load_sessions() if sessions is None else sessions
-    sessions = sessions[sessions["session_type"] == "R"]
+    # Rounds 5-14 of 2023: four races before the upgrade, six after. Later races add more
+    # confounders (further upgrades by every team) than they add evidence.
+    sessions = sessions[(sessions["session_type"] == "R") & (sessions["year"] == YEAR)
+                        & sessions["round"].between(5, 14)]
     rows = []
     for s in sessions.itertuples(index=False):
         row = {"round": s.round, "event": s.event_name.replace(" Grand Prix", ""),

@@ -1,0 +1,39 @@
+# Weekly data refresh: pulls any race that finished since the last run into the SQLite
+# snapshot and commits it. Streamlit Community Cloud redeploys on every push, so the
+# live dashboard picks up the new race without ever calling an F1 API itself.
+name: Weekly data refresh
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"    # Mondays 08:00 UTC: after weekend races, once results are published
+  workflow_dispatch:        # "Run workflow" button for a manual refresh
+
+permissions:
+  contents: write           # needed to push the updated database
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60      # FastF1 rate-limit waits (15 min each) + FIA document scan
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Pull missing races and FIA upgrade documents
+        run: python -m etl.update
+
+      - name: Commit the updated snapshot if anything changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/f1_dashboard.db
+          git diff --cached --quiet || {
+            git commit -m "Data refresh $(date -u +%F)"
+            git push
+          }

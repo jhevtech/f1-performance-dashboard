@@ -19,6 +19,21 @@ FUEL_EFFECT_S_PER_LAP = 0.06
 MIN_LAPS_PER_STINT = 6          # fewer points than this gives an unreliable slope
 PLAUSIBLE_RANGE = (0.05, 0.30)  # s/lap; outside this, the fit is flagged as suspicious
 DRY_COMPOUNDS = ["SOFT", "MEDIUM", "HARD"]
+# 2018 used Pirelli's older range, softest first. Its SOFT is a different tire from 2019's
+# SOFT (2019+ names are relative to each weekend's selection), so compare 2018 only with itself.
+DRY_COMPOUNDS_2018 = ["HYPERSOFT", "ULTRASOFT", "SUPERSOFT", "SOFT", "MEDIUM", "HARD", "SUPERHARD"]
+# 2010-2017 races have no compound data; every stint is labelled this.
+UNKNOWN_COMPOUND = "UNKNOWN"
+COMPOUND_ORDER = DRY_COMPOUNDS_2018 + [UNKNOWN_COMPOUND]
+
+
+def with_dry_compounds(laps):
+    """Laps on dry tires. A race with no compound data at all (2010-2017) keeps every lap,
+    labelled UNKNOWN: wet running can't be told apart there, beyond the heavy-rain laps
+    that clean_laps already drops as neutralised."""
+    if laps["compound"].isna().all():
+        return laps.assign(compound=UNKNOWN_COMPOUND)
+    return laps[laps["compound"].isin(DRY_COMPOUNDS_2018)]
 
 
 def _remove_slow_outliers(stint_laps, threshold=1.02):
@@ -34,7 +49,8 @@ def _remove_slow_outliers(stint_laps, threshold=1.02):
 def degradation_by_stint(laps):
     """Fit one degradation line per driver/stint/compound. Returns one row per stint."""
     laps = clean_laps(laps)
-    laps = laps[laps["compound"].isin(DRY_COMPOUNDS)]
+    # Some feeds miss tire age or stint on a few laps; polyfit fails on NaN, so drop those.
+    laps = with_dry_compounds(laps).dropna(subset=["tyre_life", "stint"])
     # Fuel-corrected time = what the lap would have been at the start-of-race fuel load.
     laps["fuel_corrected_s"] = laps["lap_time_s"] + FUEL_EFFECT_S_PER_LAP * (laps["lap_number"] - 1)
 
@@ -66,6 +82,8 @@ def degradation_by_stint(laps):
 
 def degradation_by_compound(stints, exclude_opening_stints=False):
     """Summarise stint-level rates by compound, using the median to resist outliers."""
+    if stints.empty:
+        return pd.DataFrame()
     if exclude_opening_stints:
         stints = stints[~stints["opening_stint"]]
     return (
@@ -77,14 +95,15 @@ def degradation_by_compound(stints, exclude_opening_stints=False):
             median_raw_slope=("raw_slope_s_per_lap", "median"),
             suspicious_stints=("suspicious", "sum"),
         )
-        .reindex([c for c in DRY_COMPOUNDS if c in set(stints["compound"])])
+        .reindex([c for c in COMPOUND_ORDER if c in set(stints["compound"])])
     )
 
 
 def stint_laps_for_plot(laps, driver, stint):
     """Clean, fuel-corrected laps for one stint, for plotting the points behind a fit."""
     laps = clean_laps(laps)
-    stint_laps = laps[(laps["driver"] == driver) & (laps["stint"] == stint)].copy()
+    laps = with_dry_compounds(laps)
+    stint_laps = laps[(laps["driver"] == driver) & (laps["stint"] == stint)].dropna(subset=["tyre_life"])
     stint_laps["fuel_corrected_s"] = (
         stint_laps["lap_time_s"] + FUEL_EFFECT_S_PER_LAP * (stint_laps["lap_number"] - 1)
     )
