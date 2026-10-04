@@ -38,8 +38,7 @@ FIA documents (upgrades 2024+)   ─┘
   stored and pulls only the missing races, so the same command does the initial back-fill
   and the weekly top-up.
 - **2010–2017 from Jolpica.** FastF1's lap timing starts in 2018. For earlier seasons
-  `etl/pull_history.py` reads Jolpica's full database dump (one 14 MB zip, instead of
-  ~2,300 rate-limited API calls): every lap time and position, pit stops from 2011, and the
+  `etl/pull_history.py` reads Jolpica's full database, dump every lap time and position, pit stops from 2011, and the
   official results. There are no sector times, tire compounds or flag data, so those races
   are stored with `timing_source = 'jolpica'` and some columns are derived: stints are split
   at pit stops, and a lap where the whole field was more than 7% slower than normal is
