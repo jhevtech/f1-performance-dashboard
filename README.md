@@ -336,5 +336,4 @@ data, and check that the results held up:
   size, and some data (sector times, tire compounds, upgrade lists) doesn't exist for
   older seasons. Each of these shaped the design, and each is documented above.
 
-I'm now rebuilding the core analysis by hand, in a simpler form, to make sure I
-understand every step.
+
