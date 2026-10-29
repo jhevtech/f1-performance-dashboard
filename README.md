@@ -11,6 +11,14 @@ upgrade list the Monday after it happens. Pick a season and a race in the dashbo
 the analyses on it. The in-depth write-ups below use ten 2023 races (Miami → Monza,
 rounds 5–14) as the reference set.
 
+## Demo
+
+[![Dashboard demo: sector loss, declared upgrades and gap tracking for 2026 and 2010 races](assets/demo-preview.gif)](assets/demo.mp4)
+
+*Sped up 6×. [Watch the full 3-minute walkthrough](assets/demo.mp4): sector loss and
+gap tracking for the 2026 Azerbaijan GP, the upgrades each team declared for it, and the
+same analyses on 2010 races built from Jolpica lap times.*
+
 What each era supports:
 
 | Seasons | Lap timing source | Tire degradation | Sector loss | Gap tracking | Upgrades |

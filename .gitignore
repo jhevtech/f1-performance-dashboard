@@ -20,3 +20,6 @@ explore.py
 # Local AI-assistant skill links (point into venv/)
 .claude/
 .agents/
+
+# Full-size screen recording (75 MB); assets/demo.mp4 is the compressed copy
+assets/sample vid.mp4
