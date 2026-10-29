@@ -313,3 +313,28 @@ data/f1_dashboard.db    committed SQLite snapshot used by the deployed app
 - Move storage to Delta Lake / Databricks. Each weekly commit stores a new copy of the
   whole database in git history, which is fine for a season or two; after that, Git LFS or
   a table format that appends files per race would scale better.
+
+## How this was built
+
+I built this project with [Claude Code](https://claude.com/claude-code), an AI coding
+agent, to practise directing AI tools on a real data project from start to finish. The
+agent wrote most of the code. My part was to decide what to build, set the rules for the
+data, and check that the results held up:
+
+- **Scope and data rules.** I set the coverage (every season from 2010 to the present)
+  and decided that upgrades come only from the FIA's own documents. Seasons the FIA
+  didn't publish show "not provided" instead of being filled in from press reports.
+- **Verification found real problems.**
+  - A wet race (2025 British GP) left Racing Bulls with only two usable laps, which made
+    them look 13.8% off the pace. Every team now needs at least 20 clean laps for a race
+    to count.
+  - Early results on one season suggested big upgrade packages work. That didn't hold
+    once all three seasons were loaded, and the finding was withdrawn.
+  - Computed gaps were checked against real race results, for example Vettel finishing
+    6.7 s behind Alonso at the 2012 Brazilian GP.
+- **Working within limits.** FastF1 allows 500 API calls per hour, GitHub limits file
+  size, and some data (sector times, tire compounds, upgrade lists) doesn't exist for
+  older seasons. Each of these shaped the design, and each is documented above.
+
+I'm now rebuilding the core analysis by hand, in a simpler form, to make sure I
+understand every step.
